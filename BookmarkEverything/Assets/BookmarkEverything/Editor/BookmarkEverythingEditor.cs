@@ -133,7 +133,7 @@ namespace BookmarkEverything
         private bool _showFullPath;
         private bool _showFullPathForFolder;
 
-        [MenuItem("Window/Bookmark Everything %h")]
+        [MenuItem("Tools/Bookmark Everything %h")]
         private static void Init()
         {
             var windows = (BookmarkEverythingEditor[])Resources.FindObjectsOfTypeAll(typeof(BookmarkEverythingEditor));
@@ -153,7 +153,7 @@ namespace BookmarkEverything
         private void OnEnable() {
             titleContent =RetrieveGUIContent("Bookmark", "CustomSorting");
             _defaultGUIColor = GUI.color;
-            minSize = new Vector2(400,400);
+            minSize = new Vector2(10,10);
         }
 
         public void InitInternal()
@@ -469,7 +469,7 @@ namespace BookmarkEverything
                 case "unity":
                     return "SceneAsset Icon";
                 case "prefab":
-                    return "PrefabNormal Icon";
+                    return "Prefab Icon";
                 case "mat":
                     return "Material Icon";
                 case "cs":
@@ -735,18 +735,18 @@ namespace BookmarkEverything
             _tabIndex = GUILayout.Toolbar(_tabIndex, _headerContents.ToArray());
             if (_tabIndex == 0 && _changesMade)
             {
-                    bool save = EditorUtility.DisplayDialog("Bookmark Everything", "You have unsaved changes. Would you like to save them?", "Yes", "No");
-                    if (save)
-                    {
+                    //bool save = EditorUtility.DisplayDialog("Bookmark Everything", "You have unsaved changes. Would you like to save them?", "Yes", "No");
+                    //if (save)
+                    //{
                         SaveChanges();
-                    }
-                    else
-                    {
-                        _lastlyAddedCount = -1;
-                        _tempLocations.Clear();
-                        _tempLocations.AddRange(EntryData.Clone(CurrentSettings.EntryData.ToArray()));
-                        _changesMade = false;
-                    }
+                    //}
+                    //else
+                    //{
+                    //    _lastlyAddedCount = -1;
+                    //    _tempLocations.Clear();
+                    //    _tempLocations.AddRange(EntryData.Clone(CurrentSettings.EntryData.ToArray()));
+                    //    _changesMade = false;
+                    //}
             }
             switch (_tabIndex)
             {
@@ -1044,18 +1044,18 @@ namespace BookmarkEverything
             //Show info about saving
             if (_changesMade)
             {
-                if (DrawButton("Save", "redLight", ButtonTypes.Big))
+                //if (DrawButton("Save", "redLight", ButtonTypes.Big))
                 {
                     SaveChanges();
                 }
-                EditorGUILayout.HelpBox("Changes are made, you should save changes if you want to keep them.", MessageType.Info);
-                if (DrawButton("Discard Changes", "", ButtonTypes.Standard))
-                {
-                    _lastlyAddedCount = -1;
-                    _tempLocations.Clear();
-                    _tempLocations.AddRange(EntryData.Clone(CurrentSettings.EntryData.ToArray()));
-                    _changesMade  = false;
-                }
+                //EditorGUILayout.HelpBox("Changes are made, you should save changes if you want to keep them.", MessageType.Info);
+                //if (DrawButton("Discard Changes", "", ButtonTypes.Standard))
+                //{
+                //    _lastlyAddedCount = -1;
+                //    _tempLocations.Clear();
+                //    _tempLocations.AddRange(EntryData.Clone(CurrentSettings.EntryData.ToArray()));
+                //    _changesMade  = false;
+                //}
 
             }
            

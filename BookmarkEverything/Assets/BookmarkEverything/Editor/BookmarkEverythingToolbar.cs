@@ -4,44 +4,57 @@ using BookmarkEverything;
 using UnityEditor;
 using UnityEngine;
 using UnityToolbarExtender;
-using UnityToolbarExtender.Examples;
+
+static class ToolbarStyles
+{
+    public static readonly GUIStyle commandButtonStyle;
+
+    static ToolbarStyles()
+    {
+        commandButtonStyle = new GUIStyle("Command")
+        {
+            fontSize = 16,
+            alignment = TextAnchor.MiddleCenter,
+            imagePosition = ImagePosition.ImageAbove,
+            fontStyle = FontStyle.Bold
+        };
+    }
+}
 
 [InitializeOnLoad]
 public class BookmarkEverythingToolbar
 {
+    private static BookmarkEverythingEditor.SaveData _currentSettings;
+
     static BookmarkEverythingToolbar()
     {
-        ToolbarExtender.LeftToolbarGUI.Add(OnToolbarGUI);
+        ToolbarExtender.LeftToolbarGUI.Add(OnToolbarGUI); 
+        ToolbarExtender.RightToolbarGUI.Add(RightRefresh);
     }
 
-    private static string GetNameForFile(string path)
+    private static void RightRefresh()
     {
-        if (BookmarkEverythingEditor.CurrentSettings.ShowFullPath)
+        GUILayout.FlexibleSpace();
+        GUIContent c = new GUIContent(EditorGUIUtility.IconContent("Refresh"));
+
+        if (GUILayout.Button(c, ToolbarStyles.commandButtonStyle))
         {
-            return path;
+            _currentSettings =
+                IOHelper.ReadFromDisk<BookmarkEverythingEditor.SaveData>(BookmarkEverythingEditor.SETTINGS_FILENAME);
         }
-
-        string[] s = path.Split('/');
-        return s[s.Length - 1];
-    }
-
-
-    private static string GetNameForFolder(string path)
-    {
-        if (BookmarkEverythingEditor.CurrentSettings.ShowFullPathForFolders)
-        {
-            return path;
-        }
-
-        string[] s = path.Split('/');
-        return s[s.Length - 1];
     }
 
     static void OnToolbarGUI()
     {
         GUILayout.FlexibleSpace();
 
-        foreach (var entry in BookmarkEverythingEditor.CurrentSettings.EntryData)
+        if (_currentSettings == null)
+        {
+            _currentSettings =
+                IOHelper.ReadFromDisk<BookmarkEverythingEditor.SaveData>(BookmarkEverythingEditor.SETTINGS_FILENAME);
+        }
+
+        foreach (var entry in _currentSettings.EntryData)
         {
             if (entry.Category == BookmarkEverythingEditor.CATEGORY_STARRED)
             {
@@ -61,7 +74,7 @@ public class BookmarkEverythingToolbar
                 {
                     if (exists)
                     {
-                        if (BookmarkEverythingEditor.CurrentSettings.PingType == PingTypes.Ping)
+                        if (_currentSettings.PingType == PingTypes.Ping)
                         {
                             if (Selection.activeObject)
                             {
@@ -70,11 +83,11 @@ public class BookmarkEverythingToolbar
 
                             EditorGUIUtility.PingObject(AssetDatabase.LoadMainAssetAtPath(path));
                         }
-                        else if (BookmarkEverythingEditor.CurrentSettings.PingType == PingTypes.Selection)
+                        else if (_currentSettings.PingType == PingTypes.Selection)
                         {
                             Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(path);
                         }
-                        else if (BookmarkEverythingEditor.CurrentSettings.PingType == PingTypes.Both)
+                        else if (_currentSettings.PingType == PingTypes.Both)
                         {
                             if (Selection.activeObject)
                             {
@@ -84,7 +97,6 @@ public class BookmarkEverythingToolbar
                             EditorGUIUtility.PingObject(AssetDatabase.LoadMainAssetAtPath(path));
                             Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(path);
                         }
-
                     }
                 }
             }
