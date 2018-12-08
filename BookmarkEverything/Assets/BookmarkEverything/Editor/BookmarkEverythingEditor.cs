@@ -8,17 +8,17 @@ namespace BookmarkEverything
 {
 	public class BookmarkEverythingEditor : EditorWindow
     {
-        private SaveData _currentSettings = new SaveData();
+        public static SaveData CurrentSettings = new SaveData();
 
         private bool _initialized;
         private const char CHAR_SEPERATOR = ':';
         List<EntryData> _tempLocations = new List<EntryData>();
-        private const string SETTINGS_FILENAME = "bookmarkeverythingsettings";
-        private const string CATEGORY_SCENE = "Scenes";
-        private const string CATEGORY_PREFAB = "Prefabs";
-        private const string CATEGORY_SCRIPT = "Scripts";
-        private const string CATEGORY_SO = "Scriptable Objects";
-        private const string CATEGORY_STARRED = "Starred";
+        public const string SETTINGS_FILENAME = "bookmarkeverythingsettings";
+        public const string CATEGORY_SCENE = "Scenes";
+        public const string CATEGORY_PREFAB = "Prefabs";
+        public const string CATEGORY_SCRIPT = "Scripts";
+        public const string CATEGORY_SO = "Scriptable Objects";
+        public const string CATEGORY_STARRED = "Starred";
         private string[] _projectFinderHeaders = new string[] { CATEGORY_STARRED, CATEGORY_SCENE, CATEGORY_PREFAB, CATEGORY_SCRIPT, CATEGORY_SO };
         [System.Serializable]
         public class EntryData
@@ -382,22 +382,22 @@ namespace BookmarkEverything
         private void LoadSettings()
         {
             //attempt to load the entries
-            _currentSettings = IOHelper.ReadFromDisk<SaveData>(SETTINGS_FILENAME);
+            CurrentSettings = IOHelper.ReadFromDisk<SaveData>(SETTINGS_FILENAME);
             //if nothing is saved, retrieve the default values
-            if (_currentSettings == null)
+            if (CurrentSettings == null)
             {
-                _currentSettings = new SaveData();
-                _currentSettings.PingType = PingTypes.Both;
-                _currentSettings.Save();
+                CurrentSettings = new SaveData();
+                CurrentSettings.PingType = PingTypes.Both;
+                CurrentSettings.Save();
             }
-            _tempLocations.AddRange(EntryData.Clone(_currentSettings.EntryData.ToArray()));
+            _tempLocations.AddRange(EntryData.Clone(CurrentSettings.EntryData.ToArray()));
 
-            _pingType = _currentSettings.PingType;
-            _visualMode = _currentSettings.VisualMode;
+            _pingType = CurrentSettings.PingType;
+            _visualMode = CurrentSettings.VisualMode;
             VisualMode(_visualMode);
-            _autoClose = _currentSettings.AutoClose;
-            _showFullPath = _currentSettings.ShowFullPath;
-            _showFullPathForFolder = _currentSettings.ShowFullPathForFolders;
+            _autoClose = CurrentSettings.AutoClose;
+            _showFullPath = CurrentSettings.ShowFullPath;
+            _showFullPathForFolder = CurrentSettings.ShowFullPathForFolders;
         }
 
         #endregion
@@ -410,7 +410,7 @@ namespace BookmarkEverything
         }
         private string GetNameForFile(string path)
         {
-            if (_currentSettings.ShowFullPath)
+            if (CurrentSettings.ShowFullPath)
             {
                 return path;
             }
@@ -419,7 +419,7 @@ namespace BookmarkEverything
         }
         private string GetNameForFolder(string path)
         {
-            if (_currentSettings.ShowFullPathForFolders)
+            if (CurrentSettings.ShowFullPathForFolders)
             {
                 return path;
             }
@@ -427,7 +427,7 @@ namespace BookmarkEverything
             return s[s.Length - 1];
         }
 
-        private GUIContent ContentWithIcon(string name, string path)
+        public static GUIContent ContentWithIcon(string name, string path)
         {
 
             GUIContent c = new GUIContent(name, AssetDatabase.GetCachedIcon(path));
@@ -618,7 +618,7 @@ namespace BookmarkEverything
         /// <param name="iconName"></param>
         /// <param name="tooltip"></param>
         /// <returns></returns>
-        private GUIContent RetrieveGUIContent(string name, string iconName = "", string tooltip = "", bool useIconResolver = false)
+        public static GUIContent RetrieveGUIContent(string name, string iconName = "", string tooltip = "", bool useIconResolver = false)
         {
             if (iconName != null || iconName != "")
             {
@@ -744,7 +744,7 @@ namespace BookmarkEverything
                     {
                         _lastlyAddedCount = -1;
                         _tempLocations.Clear();
-                        _tempLocations.AddRange(EntryData.Clone(_currentSettings.EntryData.ToArray()));
+                        _tempLocations.AddRange(EntryData.Clone(CurrentSettings.EntryData.ToArray()));
                         _changesMade = false;
                     }
             }
@@ -804,11 +804,11 @@ namespace BookmarkEverything
         {
 			bool clicked = false;
             _projectFinderEntriesScroll = EditorGUILayout.BeginScrollView(_projectFinderEntriesScroll, _scrollViewStyle, GUILayout.MaxHeight(position.height));
-            for (int i = 0; i < _currentSettings.EntryData.Count; i++)
+            for (int i = 0; i < CurrentSettings.EntryData.Count; i++)
             {
-                if (_currentSettings.EntryData[i].Category == category)
+                if (CurrentSettings.EntryData[i].Category == category)
                 {
-                    string path = AssetDatabase.GUIDToAssetPath(_currentSettings.EntryData[i].GUID);
+                    string path = AssetDatabase.GUIDToAssetPath(CurrentSettings.EntryData[i].GUID);
                     bool exists = IOHelper.Exists(path);
                     bool isFolder = IOHelper.IsFolder(path);
                     GUIContent content;
@@ -874,7 +874,7 @@ namespace BookmarkEverything
                 _objectIndexToBeRemoved = -1;
                 SaveChanges();
             }
-             if (_currentSettings.EntryData.Count == 0)
+             if (CurrentSettings.EntryData.Count == 0)
             {
                 EditorGUILayout.LabelField("You can Drag&Drop assets from Project Folder and easily access them here.", _boldLabelStyle);
             }
@@ -986,7 +986,7 @@ namespace BookmarkEverything
                     GUI.color = _defaultGUIColor;
                 }
             }//endfor
-             if (_tempLocations.Count == 0 && _currentSettings.EntryData.Count == 0)
+             if (_tempLocations.Count == 0 && CurrentSettings.EntryData.Count == 0)
             {
                 EditorGUILayout.LabelField("Start dragging some assets from Project Folder!", _boldLabelStyle);
             }
@@ -1022,20 +1022,20 @@ namespace BookmarkEverything
             //Save
            
             //detect if any change occured, if not reverse the HelpBox
-            if (_currentSettings.EntryData.Count != _tempLocations.Count)
+            if (CurrentSettings.EntryData.Count != _tempLocations.Count)
             {
                 _changesMade = true;
             }
             else
             {
-                for (int i = 0; i < _currentSettings.EntryData.Count; i++)
+                for (int i = 0; i < CurrentSettings.EntryData.Count; i++)
                 {
-                    if (_currentSettings.EntryData[i].GUID != _tempLocations[i].GUID || _currentSettings.EntryData[i].Category != _tempLocations[i].Category)
+                    if (CurrentSettings.EntryData[i].GUID != _tempLocations[i].GUID || CurrentSettings.EntryData[i].Category != _tempLocations[i].Category)
                     {
                         _changesMade = true;
                         break;
                     }
-                    if (i == _currentSettings.EntryData.Count - 1)
+                    if (i == CurrentSettings.EntryData.Count - 1)
                     {
                         _changesMade = false;
                     }
@@ -1053,7 +1053,7 @@ namespace BookmarkEverything
                 {
                     _lastlyAddedCount = -1;
                     _tempLocations.Clear();
-                    _tempLocations.AddRange(EntryData.Clone(_currentSettings.EntryData.ToArray()));
+                    _tempLocations.AddRange(EntryData.Clone(CurrentSettings.EntryData.ToArray()));
                     _changesMade  = false;
                 }
 
@@ -1063,11 +1063,11 @@ namespace BookmarkEverything
 
         private void SaveChanges()
         {
-            _currentSettings.EntryData.Clear();
-            _currentSettings.EntryData.AddRange(EntryData.Clone(_tempLocations.ToArray()));
+            CurrentSettings.EntryData.Clear();
+            CurrentSettings.EntryData.AddRange(EntryData.Clone(_tempLocations.ToArray()));
             _lastlyAddedCount = -1;
 
-            _currentSettings.Save();
+            CurrentSettings.Save();
             _changesMade = false;
         }
 #endregion
@@ -1087,8 +1087,8 @@ namespace BookmarkEverything
                     if (GUILayout.Button("Ping", _buttonStyle, GUILayout.ExpandWidth(false)))
                     {
                         _pingType = PingTypes.Selection;
-                        _currentSettings.PingType = _pingType;
-                        _currentSettings.Save();
+                        CurrentSettings.PingType = _pingType;
+                        CurrentSettings.Save();
                     }
                 }
                 else if (_pingType == PingTypes.Selection)
@@ -1096,8 +1096,8 @@ namespace BookmarkEverything
                     if (GUILayout.Button("Selection", _buttonStyle, GUILayout.ExpandWidth(false)))
                     {
                         _pingType = PingTypes.Both;
-                        _currentSettings.PingType = _pingType;
-                        _currentSettings.Save();
+                        CurrentSettings.PingType = _pingType;
+                        CurrentSettings.Save();
                     }
                 }
                 else if (_pingType == PingTypes.Both)
@@ -1105,8 +1105,8 @@ namespace BookmarkEverything
                     if (GUILayout.Button("Both", _buttonStyle, GUILayout.ExpandWidth(false)))
                     {
                         _pingType = PingTypes.Ping;
-                        _currentSettings.PingType = _pingType;
-                        _currentSettings.Save();
+                        CurrentSettings.PingType = _pingType;
+                        CurrentSettings.Save();
                     }
                 }
                 EditorGUILayout.EndHorizontal();
@@ -1121,8 +1121,8 @@ namespace BookmarkEverything
                 }
                 if (_autoCloseChanged)
                 {
-                    _currentSettings.AutoClose = _autoClose;
-                    _currentSettings.Save();
+                    CurrentSettings.AutoClose = _autoClose;
+                    CurrentSettings.Save();
                     _autoCloseChanged = false;
                 }
                 EditorGUILayout.EndHorizontal();
@@ -1140,8 +1140,8 @@ namespace BookmarkEverything
                 }
                 if (_showFullPathChanged)
                 {
-                    _currentSettings.ShowFullPath = _showFullPath;
-                    _currentSettings.Save();
+                    CurrentSettings.ShowFullPath = _showFullPath;
+                    CurrentSettings.Save();
                     _showFullPathChanged = false;
                 }
                 
@@ -1158,8 +1158,8 @@ namespace BookmarkEverything
                 }
                 if (_showFullPathForFolderChanged)
                 {
-                    _currentSettings.ShowFullPathForFolders = _showFullPathForFolder;
-                    _currentSettings.Save();
+                    CurrentSettings.ShowFullPathForFolders = _showFullPathForFolder;
+                    CurrentSettings.Save();
                     _showFullPathForFolderChanged = false;
                 }
 
@@ -1178,8 +1178,8 @@ namespace BookmarkEverything
                 if (_visualModeChanged)
                 {
                     VisualMode(_visualMode);
-                    _currentSettings.VisualMode = _visualMode;
-                    _currentSettings.Save();
+                    CurrentSettings.VisualMode = _visualMode;
+                    CurrentSettings.Save();
                     _visualModeChanged = false;
                 }
 
